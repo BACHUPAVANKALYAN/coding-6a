@@ -35,7 +35,9 @@ app.get("/states/", async (request, response) => {
   const getallstates = `
     SELECT * FROM state`;
   const getstate = await database.all(getallstates);
-  response.send(getstate((eachstate = getallstates(eachstate))));
+  response.send(
+    getstate.map((eachstate) => convertDbobjectToResponseObject(eachstate))
+  );
 });
 app.get("/states/:stateId/", async (request, response) => {
   const { stateId, stateName, population } = request.params;
@@ -56,7 +58,7 @@ app.get("/districts/:districtId/", async (request, response) => {
   const getallstates = `
     SELECT * FROM district`;
   const getstate = await database.all(getallstates);
-  response.send(convertDbobjectToResponseObject(getstate)));
+  response.send(convertDbobjectToResponseObject(getstate));
 });
 app.delete("/districts/:districtId/", async (request, response) => {
   const { districtId } = request.body;
@@ -75,18 +77,23 @@ app.put("/districts/:districtId/", async (request, response) => {
   response.send("District Details Updated");
 });
 app.get("/districts/:districtId/details/", async (request, response) => {
-   const {districrId}=request.params;
-    const getallstates = `
+  const { districrId } = request.params;
+  const getallstates = `
     SELECT * FROM district`;
   const getstate = await database.all(getallstates);
-  response.send(convertDbobjectToResponseObject(getstate)));
+  response.send(convertDbobjectToResponseObject(getstate));
 });
 app.get("/states/:stateId/stats/", async (request, response) => {
   const { stateId, stateName, population } = request.params;
   const getallstates = `
-    SELECT * FROM state`;
-  const getstate = await database.all(getallstates);
-  response.send(convertDbobjectToResponseObject(getstate));
+    SELECT state_id FROM district WHERE district_id=${districtId};`;
+  const getstate = await database.get(getallstates);
+  const getDistrictIdQueryResponse = await database.get(getallstates);
+  const getStateNameQuery = `
+    select state_name as stateName from state
+    where state_id = ${getDistrictIdQueryResponse.state_id}`;
+  const getStateNameQueryResponse = await database.get(getStateNameQuery);
+  response.send(convertDbobjectToResponseObject(getstateNameQueryResponse));
 });
 
 module.exports = app;
