@@ -42,21 +42,22 @@ app.get("/states/", async (request, response) => {
 app.get("/states/:stateId/", async (request, response) => {
   const { stateId, stateName, population } = request.params;
   const getallstates = `
-    SELECT * FROM state`;
+    SELECT * FROM state NATURAL JOIN district WHERE player_id=${playerId};`;
   const getstate = await database.all(getallstates);
   response.send(convertDbobjectToResponseObject(getstate));
 });
 
 app.post("/districts/", async (request, response) => {
-  const { stateId, stateName, population } = request.body;
+  const { stateId, districtName, cases, cured, active, deaths } = request.body;
   const postalldisticts = `
     INSERT INTO district(state_id,district_name,cases,cured,active,deaths) VALUES(${stateid},'${districtName}',${cases},${cured},${active},${deaths});`;
   const postdistrict = await database.run(postalldisticts);
   response.send("District Successfully Added");
 });
 app.get("/districts/:districtId/", async (request, response) => {
+  const { distinctId } = request.params;
   const getallstates = `
-    SELECT * FROM district`;
+    SELECT * FROM district WHERE district_id=${districtId};`;
   const getstate = await database.all(getallstates);
   response.send(convertDbobjectToResponseObject(getstate));
 });
@@ -69,10 +70,9 @@ app.delete("/districts/:districtId/", async (request, response) => {
   response.send("District Removed");
 });
 app.put("/districts/:districtId/", async (request, response) => {
-  const { districtId } = request.body;
-
+  const { movieId } = request.params;
   const putAllactors = `
-    UPDATE district SET district_id='${districtId}',state_id='${stateId}' WHERE district_id='${districtId}';`;
+    UPDATE district SET district_id='${districtId}',movie_id='${movieId}' WHERE movie_id=${movieId}`;
   const movieArray = await database.run(putAllactors);
   response.send("District Details Updated");
 });
