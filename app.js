@@ -31,6 +31,18 @@ const convertDbobjectToResponseObject = (dbObject) => {
     population: dbObject.population,
   };
 };
+const convertDistrictdbobjecttoresponseobject = (dbObject) => {
+  return {
+    districtId: dbObject.district_id,
+    districtName: dbObject.district_name,
+    stateId: dbObject.state_id,
+    cases: dbObject.cases,
+    cured: dbObject.cured,
+    active: dbObject.active,
+    deaths: dbObject.deaths,
+  };
+};
+
 app.get("/states/", async (request, response) => {
   const getallstates = `
     SELECT * FROM state`;
@@ -40,10 +52,10 @@ app.get("/states/", async (request, response) => {
   );
 });
 app.get("/states/:stateId/", async (request, response) => {
-  const { stateId, stateName, population } = request.params;
+  const { stateId } = request.params;
   const getallstates = `
-    SELECT * FROM state NATURAL JOIN district WHERE player_id=${playerId};`;
-  const getstate = await database.all(getallstates);
+    SELECT * FROM state  WHERE state_id=${stateId};`;
+  const getstate = await database.get(getallstates);
   response.send(convertDbobjectToResponseObject(getstate));
 });
 
@@ -55,48 +67,41 @@ app.post("/districts/", async (request, response) => {
   response.send("District Successfully Added");
 });
 app.get("/districts/:districtId/", async (request, response) => {
-  const { distinctId } = request.params;
+  const { districtId } = request.params;
   const getallstates = `
     SELECT * FROM district WHERE district_id=${districtId};`;
-  const getstate = await database.all(getallstates);
-  response.send(convertDbobjectToResponseObject(getstate));
+  const getstate = await database.get(getallstates);
+  response.send(convertDistrictdbobjecttoresponseobject(getstate));
 });
 app.delete("/districts/:districtId/", async (request, response) => {
-  const { districtId } = request.body;
+  const { districtId } = request.params;
   const deleteAllactors = `
-    DELETE FROM district WHERE district_id='${districtId}';
-    `;
+    DELETE FROM district WHERE district_id=${districtId};`;
   const movieArray = await database.run(deleteAllactors);
   response.send("District Removed");
 });
 app.put("/districts/:districtId/", async (request, response) => {
-  const { movieId } = request.params;
+  const { districtId } = request.params;
   const { districtName, stateId, cases, cured, active, deaths } = request.body;
   const putAllactors = `
         UPDATE district SET district_name='${districtName}',state_id=${stateId},cases=${cases},cured=${cured},active=${active},deaths=${deaths}  WHERE district_id=${districtId}`;
   const movieArray = await database.run(putAllactors);
   response.send("District Details Updated");
 });
-app.get("/districts/:districtId/details/", async (request, response) => {
-  const { districrId } = request.params;
-  const getallstates = `
-    SELECT state_id FROM district WHERE district_id=${districtId}`;
-  const getstate = await database.all(getallstates);
-  const distictquery = `SELECT state_name AS stateName FROM state WHERE state_id=${getallstates.state_id}`;
-  const getStateNameQueryResponse = await database.get(distictquery);
-  response.send(getStateNameQueryResponse(getstate));
-});
 app.get("/states/:stateId/stats/", async (request, response) => {
   const { stateId } = request.params;
   const getallstates = `
-    SELECT SUM(cases),SUM(cured),SUM(deaths),SUM(active) FROM district WHERE state_id=${stateId};`;
+    SELECT SUM(cases) AS totalCases,SUM(cured) AS totalCured,SUM(active) AS totalActive,SUM(deaths) AS totalDeaths FROM district WHERE state_id=${stateId};`;
   const getstate = await database.get(getallstates);
-  response.send({
-    totalCases: stats[SUM(cases)],
-    totalCases: stats[SUM(cured)],
-    totalCases: stats[SUM(active)],
-    totalCases: stats[SUM(deaths)],
-  });
+  response.send(getstate);
 });
-
+app.get("/districts/:districtId/details/", async (request, response) => {
+  const { districtId } = request.params;
+  const getallstates = `
+    SELECT state_id FROM district WHERE district_id=${districtId}`;
+  const getstate = await database.get(getallstates);
+  const distictquery = `SELECT state_name AS stateName FROM state WHERE state_id=${getallstates.state_id}`;
+  const getStateNameQueryResponse = await database.get(distictquery);
+  response.send(getStateNameQueryResponse);
+});
 module.exports = app;
