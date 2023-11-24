@@ -98,10 +98,8 @@ app.get("/states/:stateId/stats/", async (request, response) => {
 app.get("/districts/:districtId/details/", async (request, response) => {
   const { districtId } = request.params;
   const getallstates = `
-    SELECT state_id FROM district WHERE district_id=${districtId}`;
+    SELECT state_name FROM district NATURAL JOIN state WHERE district_id=${districtId};`;
   const getstate = await database.get(getallstates);
-  const distictquery = `SELECT state_name AS stateName FROM state WHERE state_id=${getallstates.state_id}`;
-  const getStateNameQueryResponse = await database.get(distictquery);
-  response.send(getStateNameQueryResponse);
+  response.send({ stateName: state.state_name });
 });
 module.exports = app;
